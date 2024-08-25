@@ -1,13 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { BASE_URL, HEADERS, USER } from '../endpoints';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { protectedBaseQuery, USER } from '../endpoints';
 import { IAuthResponse } from '../../interfaces';
 
 export const userService = createApi({
     reducerPath: 'userService',
-    baseQuery: fetchBaseQuery({
-        baseUrl: BASE_URL,
-        headers: HEADERS
-    }),
+    baseQuery: protectedBaseQuery,
     endpoints: (builder) => ({
         profile: builder.query<IAuthResponse, object>({
             query: () => ({

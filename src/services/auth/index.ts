@@ -1,13 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { BASE_URL, HEADERS } from '../endpoints';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { protectedBaseQuery } from '../endpoints';
 import { IAuth, IAuthResponse } from '../../interfaces';
 
 export const authService = createApi({
     reducerPath: 'authService',
-    baseQuery: fetchBaseQuery({
-        baseUrl: BASE_URL,
-        headers: HEADERS
-    }),
+    baseQuery: protectedBaseQuery,
     endpoints: (builder) => ({
         login: builder.mutation<IAuthResponse, IAuth>({
             query: (payload) => ({

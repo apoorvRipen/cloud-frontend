@@ -7,15 +7,15 @@
     .header {
         display: flex;
         align-items: center;
-        padding-top: 10px;
-        padding-bottom: 15px;
+        padding-top: 5px;
+        padding-bottom: 10px;
 
         .title {
             white-space: nowrap;
             overflow: hidden;
             margin-right: 5px;
             font-size: 14px;
-            line-height: 10px;
+            // line-height: 10px;
         }
     }
 

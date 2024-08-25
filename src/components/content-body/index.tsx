@@ -52,6 +52,7 @@ const ContentBody = () => {
                 }
             }))
         }
+        
     }, [data?.data]);
 
     const onScroll = () => {

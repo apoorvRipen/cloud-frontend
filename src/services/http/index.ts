@@ -1,5 +1,5 @@
 import useLoader from "../../hooks/useLoader";
-import axios, { AxiosError, AxiosProgressEvent } from "axios";
+import axios, { AxiosError } from "axios";
 import { BASE_URL, HEADERS } from "../endpoints";
 
 const HttpService = () => {

@@ -8,7 +8,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 
 import { formatMimetype } from "../../utilities/helper";
-import { useLazyExportProgressQuery } from "../../services";
+import { useLazyExportProgressQuery, useLazyExportZipQuery } from "../../services";
 import { useAppDispatch, useAppSelector, updateUploadStatus, updateUploadFiles, updateExportFile, updateExportFiles } from "../../redux";
 import imageIcon from '../../assets/images/image.svg';
 import useObject from "../../hooks/useObject";
@@ -27,6 +27,7 @@ const TrackUpload = () => {
   const uploadObject = useAppSelector(state => state.objectSlice.upload);
   const exportObject = useAppSelector(state => state.objectSlice.export);
   const [getExportProgress, { data: exportProgressData }] = useLazyExportProgressQuery({ pollingInterval: exportProgressTraking ? 3000 : 0 });
+  const [getExportZip, { data: exportZip }] = useLazyExportZipQuery();
   const uploadCompleted = uploadObject.files.filter(ele => ele.status === "COMPLETED");
   const exportCompleted = exportObject.filter(ele => ele.status === "COMPLETED");
 
@@ -52,6 +53,44 @@ const TrackUpload = () => {
     dispatch(updateUploadStatus("COMPLETED"));
   }
 
+  const initializeDowload = async () => {
+    try {
+      for await (const object of exportCompleted) {
+        await getExportZip({ _id: object._id });
+      }
+    } catch (error) {
+      console.log("Error while fetching zip blob ", { error });
+    }
+  }
+
+  const dowload = async (data:string) => {
+    try {
+      console.log({ data });
+      
+      const byteCharacters = atob(data);
+      const byteNumbers = new Array(byteCharacters.length);
+      
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/zip' });
+      console.log({ blob });
+
+      const url = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'downloaded.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+
   useEffect(() => {
     const totalFiles = uploadObject.files.length;
     if (totalFiles && totalFiles !== uploadCompleted.length && uploadObject.status !== "PROGRESS") {
@@ -69,6 +108,7 @@ const TrackUpload = () => {
       getExportProgress({ _ids: exportIds });
     } else {
       setExportProgressTraking(false);
+      initializeDowload();
     }
   }, [exportObject]);
 
@@ -79,6 +119,16 @@ const TrackUpload = () => {
       });
     }
   }, [exportProgressData]);
+
+  useEffect(() => {
+    if (exportZip?.data.status !== "EXPIRED") {
+      if (exportZip?.data.originalPath) {
+        dowload(exportZip.data.originalPath);
+        // handleDownload(exportZip.data.originalPath);
+        // downloadBlob( 'data:application/zip;base64,' + exportZip?.data.originalPath, "test.zip")
+      }
+    }
+  }, [exportZip])
 
   const onclose = () => {
     const uploadInProgress = uploadObject.status === "PROGRESS" && uploadObject.files.length !== uploadCompleted.length;

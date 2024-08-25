@@ -65,6 +65,7 @@ export interface IExportResponse extends IResponse {
         totalFiles: Number,
         success: Array<string>,
         failed: Array<string>,
+        originalPath: string,
         status: 'INQUEUE' | 'INITIATED' | 'COMPLETED' | 'EXPIRED';
     };
 }

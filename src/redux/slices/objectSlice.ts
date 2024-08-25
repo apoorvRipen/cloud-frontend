@@ -17,7 +17,7 @@ interface IObjectState {
   selectedFiles: Array<string>;
   upload: {
     files: Array<IObjectFile>,
-    status: "PROGRESS" | "COMPLETED"
+    status: "PROGRESS" | "COMPLETED" | "EXPIRED"
   },
   export: Array<IExport>
 }

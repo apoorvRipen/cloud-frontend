@@ -42,9 +42,9 @@ const Login = () => {
   const onLogin = async (credentials: IAuth) => {
     try {
       const login = await loginMutation({ email: credentials.email, password: credentials.password }).unwrap();
+      localStorage.setItem("token", login.data.token);
       dispatch(updateAuth(login.data))
       snackbar(login.message, "info");
-      localStorage.setItem("token", login.data.token);
     } catch (error) {
       console.log(error);
       const err = error as IErrorResponse;

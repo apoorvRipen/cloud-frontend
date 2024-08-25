@@ -1,14 +1,11 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { BASE_URL, HEADERS, OBJECT } from '../endpoints';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { protectedBaseQuery, OBJECT } from '../endpoints';
 import { IExportResponse, IExportResponses, IObjectResponse, IObjectsResponse } from '../../interfaces';
 
 export const objectService = createApi({
     reducerPath: 'objobjectSctService',
     tagTypes: ["addFile"],
-    baseQuery: fetchBaseQuery({
-        baseUrl: BASE_URL,
-        headers: HEADERS
-    }),
+    baseQuery: protectedBaseQuery,
     endpoints: (builder) => ({
         addFolder: builder.mutation<IObjectResponse, object>({
             query: (payload) => ({
@@ -61,6 +58,14 @@ export const objectService = createApi({
             })
         }),
 
+        exportZip: builder.query<IExportResponse, object>({
+            query: (search) => ({
+                url: OBJECT + "/export-zip",
+                method: "GET",
+                params: search
+            })
+        }),
+
         objects: builder.query<IObjectsResponse, object>({
             query: (search) => ({
                 url: OBJECT + "/list",
@@ -76,6 +81,7 @@ export const {
     useObjectQuery,
     useObjectsQuery,
     useLazyExportProgressQuery,
+    useLazyExportZipQuery,
     useAddObjectMutation,
     useAddFolderMutation,
     useRemoveObjectMutation,
