@@ -11,7 +11,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useAppDispatch, useAppSelector, updateSelectedFiles, updateExportFiles } from '../../redux';
-import { useExportMutation, useRemoveObjectMutation } from "../../services";
+import { useExportMutation, useLazyObjectQuery, useRemoveObjectMutation } from "../../services";
 
 interface IProps {
     title?: string
@@ -23,6 +23,7 @@ const ContentHeader: FC<IProps> = ({ title, viewMode, onSelectViewMode }) => {
     const location = useLocation();
     const distach = useAppDispatch();
     const [exportMutation] = useExportMutation();
+    const [getObject] = useLazyObjectQuery();
     const [removeObjectMutation] = useRemoveObjectMutation();
     const selectedFiles = useAppSelector(state => state.objectSlice.selectedFiles);
     const [alignment, setAlignment] = useState<string | null>(viewMode || 'grid');
@@ -39,17 +40,35 @@ const ContentHeader: FC<IProps> = ({ title, viewMode, onSelectViewMode }) => {
 
     const onDownload = async () => {
         try {
-            const res = await exportMutation({ objectsIds: selectedFiles });
-            if (res.data?.data) {
-                distach(updateExportFiles([res.data.data]));
+            if (selectedFiles.length > 1) {
+                const res = await exportMutation({ objectsIds: selectedFiles });
+                if (res.data?.data) {
+                    distach(updateExportFiles([res.data.data]));
+                }
+            } else {
+                const object = await getObject({ _id: selectedFiles[0] });
+                const dataUri = object.data?.data?.originalPath;
+                const name = object.data?.data?.originalName;
+                if (dataUri && name) {
+                    const [header, base64] = dataUri.split(',');
+                    const mimeType = header.split(':')[1].split(';')[0];
+                    const binary = atob(base64);
+                    const arrayBuffer = new ArrayBuffer(binary.length);
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    
+                    for (let i = 0; i < binary.length; i++) {
+                      uint8Array[i] = binary.charCodeAt(i);
+                    }
+            
+                    const blob = new Blob([arrayBuffer], { type: mimeType });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', name);
+                    document.body.appendChild(link);
+                    link.click();
+                }
             }
-            // const url = window.URL.createObjectURL(new Blob([data]));
-            // const link = document.createElement('a');
-            // link.href = url;
-            // link.setAttribute('download', 'files.zip');
-            // document.body.appendChild(link);
-            // link.click();
-
         } catch (error) {
             console.log({ error });
         }

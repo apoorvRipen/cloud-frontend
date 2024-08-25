@@ -63,31 +63,26 @@ const TrackUpload = () => {
     }
   }
 
-  const dowload = async (data:string) => {
-    try {
-      console.log({ data });
-      
-      const byteCharacters = atob(data);
-      const byteNumbers = new Array(byteCharacters.length);
-      
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+  const onDownload = (base64Zip: string) => {
+    if (base64Zip) {
+      // Convert Base64 to a Blob
+      const binaryString = window.atob(base64Zip);
+      const binaryLen = binaryString.length;
+      const bytes = new Uint8Array(binaryLen);
+
+      for (let i = 0; i < binaryLen; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
 
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/zip' });
-      console.log({ blob });
-
+      const blob = new Blob([bytes], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'downloaded.zip';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (error) {
-      console.log({ error });
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'files.zip'; // Name of the file to be downloaded
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url); // Clean
     }
   }
 
@@ -102,13 +97,16 @@ const TrackUpload = () => {
 
   useEffect(() => {
     const exportIds = exportObject.filter(ele => ele.status === "INITIATED").map(ele => ele._id);
-    if (exportObject.length && exportIds && !exportProgressTraking) {
+    
+    if (exportObject.length && exportIds?.length) {
       setIsClose(false);
       setExportProgressTraking(true);
       getExportProgress({ _ids: exportIds });
     } else {
       setExportProgressTraking(false);
-      initializeDowload();
+      setTimeout(() => {
+        initializeDowload();
+      }, 1000 * 1);
     }
   }, [exportObject]);
 
@@ -123,9 +121,7 @@ const TrackUpload = () => {
   useEffect(() => {
     if (exportZip?.data.status !== "EXPIRED") {
       if (exportZip?.data.originalPath) {
-        dowload(exportZip.data.originalPath);
-        // handleDownload(exportZip.data.originalPath);
-        // downloadBlob( 'data:application/zip;base64,' + exportZip?.data.originalPath, "test.zip")
+        onDownload(exportZip.data.originalPath);
       }
     }
   }, [exportZip])

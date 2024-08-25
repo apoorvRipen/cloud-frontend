@@ -78,7 +78,7 @@ export const objectService = createApi({
 });
 
 export const {
-    useObjectQuery,
+    useLazyObjectQuery,
     useObjectsQuery,
     useLazyExportProgressQuery,
     useLazyExportZipQuery,

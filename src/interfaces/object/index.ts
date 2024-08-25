@@ -10,6 +10,7 @@ export interface IObject {
     _id: string,
     originalName: string;
     originalType: string;
+    originalPath: string;
     thumbnailPath: string;
     sizeInByte: number;
     type: string;
